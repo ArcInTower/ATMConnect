@@ -13,7 +13,10 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Base64;
-import java.util.Random;
+import java.util.Arrays;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
+import java.time.Instant;
 import java.io.ByteArrayInputStream;
 
 @Service
@@ -28,6 +31,21 @@ public class CryptoServiceImpl implements CryptoService {
     
     private final KeyPair serviceKeyPair;
     private final SecureRandom secureRandom;
+    private final Map<String, SessionKey> sessionKeys = new ConcurrentHashMap<>();
+    
+    private static class SessionKey {
+        final byte[] key;
+        final long timestamp;
+        
+        SessionKey(byte[] key) {
+            this.key = key;
+            this.timestamp = Instant.now().getEpochSecond();
+        }
+        
+        boolean isExpired() {
+            return (Instant.now().getEpochSecond() - timestamp) > 3600; // 1 hour
+        }
+    }
     
     static {
         Security.addProvider(new BouncyCastleProvider());
@@ -77,9 +95,18 @@ public class CryptoServiceImpl implements CryptoService {
     
     @Override
     public byte[] decrypt(byte[] encryptedData) {
+        throw new UnsupportedOperationException("Use decrypt with session key context");
+    }
+    
+    public byte[] decrypt(byte[] encryptedData, String sessionId) {
         try {
-            if (encryptedData.length < GCM_IV_LENGTH) {
-                throw new IllegalArgumentException("Invalid encrypted data");
+            if (encryptedData == null || encryptedData.length < GCM_IV_LENGTH + 16) {
+                throw new IllegalArgumentException("Invalid encrypted data length");
+            }
+            
+            SessionKey sessionKey = sessionKeys.get(sessionId);
+            if (sessionKey == null || sessionKey.isExpired()) {
+                throw new SecurityException("Invalid or expired session");
             }
             
             byte[] iv = new byte[GCM_IV_LENGTH];
@@ -88,8 +115,10 @@ public class CryptoServiceImpl implements CryptoService {
             byte[] cipherText = new byte[encryptedData.length - iv.length];
             System.arraycopy(encryptedData, iv.length, cipherText, 0, cipherText.length);
             
+            SecretKey secretKey = new SecretKeySpec(sessionKey.key, 0, 32, "AES");
             Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
             GCMParameterSpec gcmSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmSpec);
             
             return cipher.doFinal(cipherText);
         } catch (Exception e) {
@@ -123,14 +152,22 @@ public class CryptoServiceImpl implements CryptoService {
     
     @Override
     public String generateOTP() {
-        Random random = new SecureRandom();
-        int otp = 100000 + random.nextInt(900000);
+        int otp = 100000 + secureRandom.nextInt(900000);
         return String.valueOf(otp);
     }
     
     @Override
     public boolean verifyOTP(String otp, String secret) {
-        return otp != null && otp.equals(secret);
+        if (otp == null || secret == null) {
+            return false;
+        }
+        
+        // Constant-time comparison to prevent timing attacks
+        if (otp.length() != secret.length()) {
+            return false;
+        }
+        
+        return MessageDigest.isEqual(otp.getBytes(), secret.getBytes());
     }
     
     @Override

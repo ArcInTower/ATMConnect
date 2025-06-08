@@ -71,8 +71,9 @@ logging:
     max-history: 30
 
 jwt:
-  secret: "mySecretKey123456789012345678901234567890"
-  expiration-ms: 900000 # 15 minutes
+  secret: ${JWT_SECRET_KEY:}
+  expiration-ms: ${JWT_EXPIRATION_MS:900000} # 15 minutes
+  refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:86400000} # 24 hours
 
 atmconnect:
   bluetooth:

@@ -67,10 +67,11 @@ public class TransactionUseCaseImpl implements TransactionUseCase {
         
         Transaction savedTransaction = transactionRepository.save(transaction);
         
-        log.info("Withdrawal initiated. Reference: {}, OTP: {}", referenceNumber, otpCode);
+        log.info("Withdrawal initiated. Reference: {}", referenceNumber);
+        log.debug("OTP generated for withdrawal reference: {}", referenceNumber);
         
         // In production, send OTP via SMS/email
-        sendOTP(account.getCustomer().getPhoneNumber(), otpCode);
+        sendOTP(account.getCustomer().getPhoneNumber(), otpCode, referenceNumber);
         
         return savedTransaction;
     }
@@ -268,8 +269,13 @@ public class TransactionUseCaseImpl implements TransactionUseCase {
         return cryptoService.computeHash(data.getBytes());
     }
     
-    private void sendOTP(String phoneNumber, String otpCode) {
+    private void sendOTP(String phoneNumber, String otpCode, String referenceNumber) {
         // In production, integrate with SMS service
-        log.info("OTP {} sent to {}", otpCode, phoneNumber.replaceAll("\\d(?=\\d{4})", "*"));
+        String maskedPhone = phoneNumber.replaceAll("\\d(?=\\d{4})", "*");
+        log.info("OTP sent to {} for transaction reference: {}", maskedPhone, referenceNumber);
+        log.debug("SMS delivery attempted for reference: {}", referenceNumber);
+        
+        // TODO: Integrate with secure SMS service provider
+        // Example: smsService.send(phoneNumber, "Your ATM withdrawal OTP: " + otpCode);
     }
 }
