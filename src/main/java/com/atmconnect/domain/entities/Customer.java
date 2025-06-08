@@ -1,6 +1,7 @@
 package com.atmconnect.domain.entities;
 
 import com.atmconnect.domain.valueobjects.Pin;
+import com.atmconnect.domain.constants.SecurityConstants;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -113,8 +114,8 @@ public class Customer {
     
     private void incrementFailedAttempts() {
         failedAttempts++;
-        if (failedAttempts >= 3) {
-            lockedUntil = LocalDateTime.now().plusMinutes(30);
+        if (failedAttempts >= SecurityConstants.MAX_FAILED_LOGIN_ATTEMPTS) {
+            lockedUntil = LocalDateTime.now().plusMinutes(SecurityConstants.ACCOUNT_LOCKOUT_DURATION_MINUTES);
         }
     }
     
