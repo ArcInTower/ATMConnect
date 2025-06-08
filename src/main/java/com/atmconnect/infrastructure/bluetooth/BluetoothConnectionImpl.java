@@ -1,5 +1,6 @@
 package com.atmconnect.infrastructure.bluetooth;
 
+import com.atmconnect.domain.constants.BLEConstants;
 import com.atmconnect.domain.ports.outbound.BluetoothService.BluetoothConnection;
 import com.atmconnect.infrastructure.security.CryptoService;
 import com.atmconnect.infrastructure.security.SecureMessageProtocol;
@@ -7,21 +8,44 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.nio.ByteBuffer;
 import java.security.PublicKey;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.time.Instant;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Enhanced Bluetooth connection implementation with GATT support.
+ * 
+ * <p>This implementation provides secure communication through GATT characteristics
+ * with proper encryption, authentication, and security measures for banking operations.
+ */
 @Slf4j
 public class BluetoothConnectionImpl implements BluetoothConnection {
     
     private final String deviceAddress;
     private final AtomicBoolean connected;
-    private final AtomicBoolean secure;
-    private final BlockingQueue<byte[]> messageQueue;
+    private final AtomicBoolean encrypted;
+    private final AtomicBoolean authenticated;
     private final CryptoService cryptoService;
+    
+    // GATT-related components
+    private final Map<String, GATTCharacteristic> characteristics = new ConcurrentHashMap<>();
+    private final Map<String, GATTService> services = new ConcurrentHashMap<>();
+    private final Map<String, byte[]> characteristicValues = new ConcurrentHashMap<>();
+    private final Map<String, CompletableFuture<byte[]>> pendingReads = new ConcurrentHashMap<>();
+    private final Map<String, CompletableFuture<Void>> pendingWrites = new ConcurrentHashMap<>();
+    
+    // Connection parameters
+    private final AtomicInteger connectionInterval = new AtomicInteger(BLEConstants.CONNECTION_INTERVAL_UNITS);
+    private final AtomicInteger slaveLatency = new AtomicInteger(BLEConstants.SLAVE_LATENCY);
+    private final AtomicInteger supervisionTimeout = new AtomicInteger(BLEConstants.SUPERVISION_TIMEOUT_UNITS);
+    
+    // Security components
     private PublicKey peerPublicKey;
     private byte[] sessionKey;
+    private final Map<String, Boolean> notificationStates = new ConcurrentHashMap<>();
+    private volatile Instant lastActivity;
     
     public BluetoothConnectionImpl(String deviceAddress, boolean isSecure, CryptoService cryptoService) {
         this.deviceAddress = deviceAddress;
