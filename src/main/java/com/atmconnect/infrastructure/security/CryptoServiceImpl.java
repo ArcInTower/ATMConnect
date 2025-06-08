@@ -54,6 +54,10 @@ public class CryptoServiceImpl implements CryptoService {
     public CryptoServiceImpl() {
         this.secureRandom = new SecureRandom();
         this.serviceKeyPair = generateKeyPair();
+        // Initialize default session key for basic operations
+        byte[] defaultKey = new byte[32];
+        secureRandom.nextBytes(defaultKey);
+        sessionKeys.put("default", new SessionKey(defaultKey));
     }
     
     @Override
@@ -95,7 +99,7 @@ public class CryptoServiceImpl implements CryptoService {
     
     @Override
     public byte[] decrypt(byte[] encryptedData) {
-        throw new UnsupportedOperationException("Use decrypt with session key context");
+        return decrypt(encryptedData, "default");
     }
     
     public byte[] decrypt(byte[] encryptedData, String sessionId) {

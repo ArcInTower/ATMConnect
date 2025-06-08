@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet id="009-insert-initial-data" author="atmconnect">
+        <comment>Insert initial test data and sample ATMs</comment>
+        
+        <!-- Insert sample ATMs -->
+        <insert tableName="atms">
+            <column name="id" value="atm-001"/>
+            <column name="atm_code" value="001"/>
+            <column name="location_name" value="Main Branch - Downtown"/>
+            <column name="address" value="123 Main Street"/>
+            <column name="city" value="New York"/>
+            <column name="state" value="NY"/>
+            <column name="postal_code" value="10001"/>
+            <column name="country" value="USA"/>
+            <column name="latitude" value="40.7128"/>
+            <column name="longitude" value="-74.0060"/>
+            <column name="status" value="AVAILABLE"/>
+            <column name="cash_level" value="HIGH"/>
+            <column name="bluetooth_enabled" value="true"/>
+            <column name="bluetooth_address" value="00:11:22:33:44:55"/>
+            <column name="max_withdrawal_amount" value="1000.00"/>
+            <column name="supported_currencies" value="USD"/>
+            <column name="active" value="true"/>
+            <column name="maintenance_mode" value="false"/>
+        </insert>
+        
+        <insert tableName="atms">
+            <column name="id" value="atm-002"/>
+            <column name="atm_code" value="002"/>
+            <column name="location_name" value="Financial District"/>
+            <column name="address" value="456 Wall Street"/>
+            <column name="city" value="New York"/>
+            <column name="state" value="NY"/>
+            <column name="postal_code" value="10005"/>
+            <column name="country" value="USA"/>
+            <column name="latitude" value="40.7074"/>
+            <column name="longitude" value="-74.0113"/>
+            <column name="status" value="AVAILABLE"/>
+            <column name="cash_level" value="MEDIUM"/>
+            <column name="bluetooth_enabled" value="true"/>
+            <column name="bluetooth_address" value="00:11:22:33:44:66"/>
+            <column name="max_withdrawal_amount" value="800.00"/>
+            <column name="supported_currencies" value="USD"/>
+            <column name="active" value="true"/>
+            <column name="maintenance_mode" value="false"/>
+        </insert>
+        
+        <insert tableName="atms">
+            <column name="id" value="atm-003"/>
+            <column name="atm_code" value="003"/>
+            <column name="location_name" value="University Campus"/>
+            <column name="address" value="789 University Avenue"/>
+            <column name="city" value="Boston"/>
+            <column name="state" value="MA"/>
+            <column name="postal_code" value="02101"/>
+            <column name="country" value="USA"/>
+            <column name="latitude" value="42.3601"/>
+            <column name="longitude" value="-71.0589"/>
+            <column name="status" value="AVAILABLE"/>
+            <column name="cash_level" value="HIGH"/>
+            <column name="bluetooth_enabled" value="true"/>
+            <column name="bluetooth_address" value="00:11:22:33:44:77"/>
+            <column name="max_withdrawal_amount" value="500.00"/>
+            <column name="supported_currencies" value="USD"/>
+            <column name="active" value="true"/>
+            <column name="maintenance_mode" value="false"/>
+        </insert>
+
+        <!-- Insert sample customer (for development/testing) -->
+        <insert tableName="customers">
+            <column name="id" value="customer-demo-001"/>
+            <column name="customer_number" value="12345678"/>
+            <column name="first_name" value="John"/>
+            <column name="last_name" value="Doe"/>
+            <column name="email" value="john.doe@example.com"/>
+            <column name="phone_number" value="+1234567890"/>
+            <column name="pin_hash" value="$2a$12$V8mYfzWjHjxB8iu7.LhcaelOQW8fJQ4fQpQ8yJ4VnLm1iHj2H8M9e"/>
+            <column name="pin_salt" value="demo_salt_12345"/>
+            <column name="biometric_enabled" value="false"/>
+            <column name="active" value="true"/>
+            <column name="locked" value="false"/>
+            <column name="failed_attempts" value="0"/>
+        </insert>
+
+        <!-- Insert sample account -->
+        <insert tableName="accounts">
+            <column name="id" value="account-demo-001"/>
+            <column name="customer_id" value="customer-demo-001"/>
+            <column name="account_number" value="1234567890123456"/>
+            <column name="account_type" value="CHECKING"/>
+            <column name="balance_amount" value="5000.00"/>
+            <column name="available_balance_amount" value="5000.00"/>
+            <column name="currency_code" value="USD"/>
+            <column name="daily_withdrawal_limit" value="2000.00"/>
+            <column name="daily_withdrawal_used" value="0.00"/>
+            <column name="active" value="true"/>
+            <column name="frozen" value="false"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

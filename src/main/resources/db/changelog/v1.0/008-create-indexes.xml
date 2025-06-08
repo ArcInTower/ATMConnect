@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet id="008-create-indexes" author="atmconnect">
+        <comment>Create indexes for performance optimization</comment>
+        
+        <!-- Customers table indexes -->
+        <createIndex tableName="customers" indexName="idx_customers_customer_number">
+            <column name="customer_number"/>
+        </createIndex>
+        
+        <createIndex tableName="customers" indexName="idx_customers_email">
+            <column name="email"/>
+        </createIndex>
+        
+        <createIndex tableName="customers" indexName="idx_customers_phone">
+            <column name="phone_number"/>
+        </createIndex>
+        
+        <createIndex tableName="customers" indexName="idx_customers_active">
+            <column name="active"/>
+        </createIndex>
+
+        <!-- Accounts table indexes -->
+        <createIndex tableName="accounts" indexName="idx_accounts_customer_id">
+            <column name="customer_id"/>
+        </createIndex>
+        
+        <createIndex tableName="accounts" indexName="idx_accounts_account_number">
+            <column name="account_number"/>
+        </createIndex>
+        
+        <createIndex tableName="accounts" indexName="idx_accounts_type">
+            <column name="account_type"/>
+        </createIndex>
+        
+        <createIndex tableName="accounts" indexName="idx_accounts_active">
+            <column name="active"/>
+        </createIndex>
+
+        <!-- Registered devices table indexes -->
+        <createIndex tableName="registered_devices" indexName="idx_registered_devices_customer_id">
+            <column name="customer_id"/>
+        </createIndex>
+        
+        <createIndex tableName="registered_devices" indexName="idx_registered_devices_device_id">
+            <column name="device_id"/>
+        </createIndex>
+        
+        <createIndex tableName="registered_devices" indexName="idx_registered_devices_active">
+            <column name="active"/>
+        </createIndex>
+        
+        <createIndex tableName="registered_devices" indexName="idx_registered_devices_last_used">
+            <column name="last_used"/>
+        </createIndex>
+
+        <!-- ATMs table indexes -->
+        <createIndex tableName="atms" indexName="idx_atms_atm_code">
+            <column name="atm_code"/>
+        </createIndex>
+        
+        <createIndex tableName="atms" indexName="idx_atms_status">
+            <column name="status"/>
+        </createIndex>
+        
+        <createIndex tableName="atms" indexName="idx_atms_location">
+            <column name="city"/>
+            <column name="state"/>
+        </createIndex>
+        
+        <createIndex tableName="atms" indexName="idx_atms_bluetooth">
+            <column name="bluetooth_enabled"/>
+        </createIndex>
+        
+        <createIndex tableName="atms" indexName="idx_atms_active">
+            <column name="active"/>
+        </createIndex>
+
+        <!-- Transactions table indexes -->
+        <createIndex tableName="transactions" indexName="idx_transactions_account_id">
+            <column name="account_id"/>
+        </createIndex>
+        
+        <createIndex tableName="transactions" indexName="idx_transactions_atm_id">
+            <column name="atm_id"/>
+        </createIndex>
+        
+        <createIndex tableName="transactions" indexName="idx_transactions_transaction_id">
+            <column name="transaction_id"/>
+        </createIndex>
+        
+        <createIndex tableName="transactions" indexName="idx_transactions_reference_number">
+            <column name="reference_number"/>
+        </createIndex>
+        
+        <createIndex tableName="transactions" indexName="idx_transactions_type">
+            <column name="type"/>
+        </createIndex>
+        
+        <createIndex tableName="transactions" indexName="idx_transactions_status">
+            <column name="status"/>
+        </createIndex>
+        
+        <createIndex tableName="transactions" indexName="idx_transactions_created_at">
+            <column name="created_at"/>
+        </createIndex>
+        
+        <createIndex tableName="transactions" indexName="idx_transactions_device_id">
+            <column name="device_id"/>
+        </createIndex>
+        
+        <createIndex tableName="transactions" indexName="idx_transactions_account_created">
+            <column name="account_id"/>
+            <column name="created_at"/>
+        </createIndex>
+
+        <!-- Security events table indexes -->
+        <createIndex tableName="security_events" indexName="idx_security_events_customer_id">
+            <column name="customer_id"/>
+        </createIndex>
+        
+        <createIndex tableName="security_events" indexName="idx_security_events_account_id">
+            <column name="account_id"/>
+        </createIndex>
+        
+        <createIndex tableName="security_events" indexName="idx_security_events_type">
+            <column name="event_type"/>
+        </createIndex>
+        
+        <createIndex tableName="security_events" indexName="idx_security_events_severity">
+            <column name="severity"/>
+        </createIndex>
+        
+        <createIndex tableName="security_events" indexName="idx_security_events_created_at">
+            <column name="created_at"/>
+        </createIndex>
+        
+        <createIndex tableName="security_events" indexName="idx_security_events_resolved">
+            <column name="resolved"/>
+        </createIndex>
+        
+        <createIndex tableName="security_events" indexName="idx_security_events_ip">
+            <column name="ip_address"/>
+        </createIndex>
+
+        <!-- JWT blacklist table indexes -->
+        <createIndex tableName="jwt_blacklist" indexName="idx_jwt_blacklist_customer_id">
+            <column name="customer_id"/>
+        </createIndex>
+        
+        <createIndex tableName="jwt_blacklist" indexName="idx_jwt_blacklist_token_id">
+            <column name="token_id"/>
+        </createIndex>
+        
+        <createIndex tableName="jwt_blacklist" indexName="idx_jwt_blacklist_expires_at">
+            <column name="expires_at"/>
+        </createIndex>
+        
+        <createIndex tableName="jwt_blacklist" indexName="idx_jwt_blacklist_revoked_at">
+            <column name="revoked_at"/>
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <!-- Version 1.0 - Initial Schema -->
+    <include file="db/changelog/v1.0/001-create-customers-table.xml"/>
+    <include file="db/changelog/v1.0/002-create-accounts-table.xml"/>
+    <include file="db/changelog/v1.0/003-create-registered-devices-table.xml"/>
+    <include file="db/changelog/v1.0/004-create-atms-table.xml"/>
+    <include file="db/changelog/v1.0/005-create-transactions-table.xml"/>
+    <include file="db/changelog/v1.0/006-create-security-events-table.xml"/>
+    <include file="db/changelog/v1.0/007-create-jwt-blacklist-table.xml"/>
+    <include file="db/changelog/v1.0/008-create-indexes.xml"/>
+    <include file="db/changelog/v1.0/009-insert-initial-data.xml"/>
+
+</databaseChangeLog>

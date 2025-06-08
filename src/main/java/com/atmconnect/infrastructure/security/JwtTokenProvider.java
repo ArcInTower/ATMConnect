@@ -38,6 +38,27 @@ public class JwtTokenProvider {
                 .compact();
     }
     
+    public String generateToken(String customerId) {
+        return generateToken(customerId, null);
+    }
+    
+    public String generateRefreshToken(String customerId) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + (jwtExpirationMs * 24)); // 24x longer for refresh
+        
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "refresh");
+        claims.put("iat", now);
+        
+        return Jwts.builder()
+                .setSubject(customerId)
+                .addClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();
+    }
+    
     public String getCustomerIdFromToken(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)

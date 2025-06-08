@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet id="002-create-accounts-table" author="atmconnect">
+        <comment>Create accounts table with balance tracking and limits</comment>
+        
+        <createTable tableName="accounts">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="customer_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="account_number" type="VARCHAR(16)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="account_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="balance_amount" type="DECIMAL(19,2)" defaultValueNumeric="0.00">
+                <constraints nullable="false"/>
+            </column>
+            <column name="available_balance_amount" type="DECIMAL(19,2)" defaultValueNumeric="0.00">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency_code" type="VARCHAR(3)" defaultValue="USD">
+                <constraints nullable="false"/>
+            </column>
+            <column name="daily_withdrawal_limit" type="DECIMAL(19,2)" defaultValueNumeric="2000.00">
+                <constraints nullable="false"/>
+            </column>
+            <column name="daily_withdrawal_used" type="DECIMAL(19,2)" defaultValueNumeric="0.00">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_withdrawal_reset" type="DATE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="frozen" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint 
+            baseTableName="accounts"
+            baseColumnNames="customer_id"
+            referencedTableName="customers"
+            referencedColumnNames="id"
+            constraintName="fk_accounts_customer_id"
+            onDelete="CASCADE"/>
+
+        <addUniqueConstraint 
+            tableName="accounts" 
+            columnNames="account_number" 
+            constraintName="uk_accounts_account_number"/>
+
+    </changeSet>
+
+</databaseChangeLog>

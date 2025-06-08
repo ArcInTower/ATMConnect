@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet id="003-create-registered-devices-table" author="atmconnect">
+        <comment>Create registered devices table for multi-factor authentication</comment>
+        
+        <createTable tableName="registered_devices">
+            <column name="id" type="VARCHAR(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="customer_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="device_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="device_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="device_type" type="VARCHAR(50)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="operating_system" type="VARCHAR(50)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="app_version" type="VARCHAR(20)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="device_fingerprint" type="VARCHAR(256)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="public_key" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="trusted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_used" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+            <column name="registered_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expires_at" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint 
+            baseTableName="registered_devices"
+            baseColumnNames="customer_id"
+            referencedTableName="customers"
+            referencedColumnNames="id"
+            constraintName="fk_registered_devices_customer_id"
+            onDelete="CASCADE"/>
+
+        <addUniqueConstraint 
+            tableName="registered_devices" 
+            columnNames="customer_id,device_id" 
+            constraintName="uk_registered_devices_customer_device"/>
+
+    </changeSet>
+
+</databaseChangeLog>

@@ -112,7 +112,85 @@ server:
 spring:
   config:
     activate:
+      on-profile: postgresql
+  
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:atmconnect}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME:atmconnect}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:20}
+      minimum-idle: ${DB_POOL_MIN_SIZE:5}
+      connection-timeout: ${DB_CONNECTION_TIMEOUT_MS:30000}
+      idle-timeout: ${DB_IDLE_TIMEOUT_MS:600000}
+      max-lifetime: ${DB_MAX_LIFETIME_MS:1800000}
+      validation-timeout: ${DB_VALIDATION_TIMEOUT_MS:5000}
+      leak-detection-threshold: ${DB_LEAK_DETECTION_THRESHOLD_MS:60000}
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+        default_schema: ${DB_SCHEMA:public}
+  
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    default-schema: ${DB_SCHEMA:public}
+    liquibase-schema: ${DB_LIQUIBASE_SCHEMA:public}
+
+logging:
+  level:
+    com.atmconnect: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+
+---
+spring:
+  config:
+    activate:
       on-profile: production
+  
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:atmconnect}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME:atmconnect}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:20}
+      minimum-idle: ${DB_POOL_MIN_SIZE:5}
+      connection-timeout: ${DB_CONNECTION_TIMEOUT_MS:30000}
+      idle-timeout: ${DB_IDLE_TIMEOUT_MS:600000}
+      max-lifetime: ${DB_MAX_LIFETIME_MS:1800000}
+      validation-timeout: ${DB_VALIDATION_TIMEOUT_MS:5000}
+      leak-detection-threshold: ${DB_LEAK_DETECTION_THRESHOLD_MS:60000}
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+        default_schema: ${DB_SCHEMA:public}
+  
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    default-schema: ${DB_SCHEMA:public}
+    liquibase-schema: ${DB_LIQUIBASE_SCHEMA:public}
 
 logging:
   level:

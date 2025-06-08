@@ -1,0 +1,99 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+target/
+!target/*.jar
+build/
+dist/
+out/
+
+# Dependencies
+node_modules/
+.npm
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Test files
+src/test/
+*.test.js
+*.spec.js
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# Package files
+*.tgz
+*.tar.gz
+
+# Docker files (except Dockerfile)
+docker-compose.override.yml
+.dockerignore
+
+# Kubernetes files
+k8s/
+kubernetes/
+*.yaml
+*.yml
+!src/main/resources/application.yml
+
+# CI/CD files
+.github/
+.gitlab-ci.yml
+.travis.yml
+Jenkinsfile
+
+# Security files
+*.pem
+*.key
+*.crt
+*.p12
+!src/main/resources/keystore/*.p12
+
+# Database files
+*.db
+*.sqlite
+
+# Backup files
+*.backup
+*.bak
+
+# Cache files
+.cache/

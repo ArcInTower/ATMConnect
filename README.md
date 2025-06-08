@@ -104,20 +104,23 @@ Following the documented BLE specification:
 
 | Component | Technology | Version |
 |-----------|------------|---------|
-| **Language** | Java | 17+ |
+| **Language** | Java | 21+ |
 | **Framework** | Spring Boot | 3.2+ |
 | **Security** | Spring Security | 6.1+ |
-| **Database** | H2/PostgreSQL | Latest |
-| **Build Tool** | Gradle | 8.0+ |
+| **Database** | H2/PostgreSQL | 15+ |
+| **Build Tool** | Maven | 3.9+ |
 | **Testing** | JUnit 5 | 5.9+ |
 | **BLE** | BlueZ/Native | 5.0+ |
 | **Container** | Docker | 24.0+ |
+| **Migration** | Liquibase | 4.1+ |
+| **Cache** | Redis | 7+ |
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- ☑️ Java 17 or higher
-- ☑️ Gradle 8.0+
+- ☑️ Java 21 or higher
+- ☑️ Maven 3.9+
+- ☑️ Docker & Docker Compose
 - ☑️ Git
 - ☑️ BLE-capable hardware (for testing)
 
@@ -129,36 +132,103 @@ git clone https://github.com/ArcInTower/ATMConnect.git
 cd ATMConnect
 
 # Build the project
-./gradlew build
+./mvnw clean package
 
 # Run tests
-./gradlew test
+./mvnw test
 
-# Start the application
-./gradlew bootRun
+# Start the application (H2 development mode)
+./mvnw spring-boot:run
 ```
 
 ### Docker Deployment
 
+#### Development Environment
 ```bash
-# Build Docker image
-docker build -t atmconnect .
+# Start all services (PostgreSQL + Redis + App)
+docker-compose up -d
 
-# Run container
-docker run -p 8080:8080 atmconnect
+# Or use the deployment script
+./scripts/deploy.sh development up
+
+# Check service status
+docker-compose ps
+```
+
+#### Production Environment
+```bash
+# Copy environment template
+cp .env.example .env
+
+# Edit environment variables
+nano .env
+
+# Deploy production stack
+./scripts/deploy.sh production up
+
+# Monitor logs
+./scripts/deploy.sh production logs
+```
+
+### Quick Build & Deploy
+```bash
+# Build and deploy in one step
+./scripts/build.sh latest production
+./scripts/deploy.sh production up
 ```
 
 ### Configuration
 
+#### Environment Profiles
+- **`development`**: H2 database, debug logging, no SSL
+- **`postgresql`**: PostgreSQL database, INFO logging
+- **`production`**: PostgreSQL, SSL enabled, optimized settings
+
+#### Key Configuration Options
 ```yaml
 # application.yml
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:development}
+  
+  datasource:
+    # PostgreSQL configuration (production/postgresql profiles)
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:atmconnect}
+    username: ${DB_USERNAME:atmconnect}
+    password: ${DB_PASSWORD:}
+
 atmconnect:
   bluetooth:
-    mode: peripheral  # or central, or both
     scan-timeout-seconds: 30
+    connection-timeout-seconds: 10
+    max-concurrent-connections: 5
   security:
     max-failed-attempts: 3
+    lockout-duration-minutes: 30
     otp-expiration-minutes: 5
+    session-timeout-minutes: 15
+
+jwt:
+  secret: ${JWT_SECRET_KEY:}
+  expiration-ms: ${JWT_EXPIRATION_MS:900000}
+```
+
+#### Environment Variables
+```bash
+# Database
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=atmconnect
+DB_USERNAME=atmconnect
+DB_PASSWORD=your_secure_password
+
+# Security
+JWT_SECRET_KEY=your-super-secret-jwt-key-minimum-32-characters
+REDIS_PASSWORD=your_redis_password
+
+# Application
+SPRING_PROFILES_ACTIVE=production
+APP_PORT=8443
 ```
 
 ## 📚 Documentation
@@ -169,6 +239,62 @@ atmconnect:
 | [🔒 Security Policy](SECURITY.md) | Security guidelines and vulnerability reporting |
 | [🤝 Contributing Guide](CONTRIBUTING.md) | How to contribute to the project |
 | [📜 Code of Conduct](CODE_OF_CONDUCT.md) | Community guidelines and standards |
+
+## 🌐 API Documentation
+
+### Authentication Endpoints
+```http
+POST /api/v1/auth/login/pin
+POST /api/v1/auth/login/biometric
+POST /api/v1/auth/register-device
+POST /api/v1/auth/refresh
+POST /api/v1/auth/logout
+GET  /api/v1/auth/device-status
+```
+
+### Transaction Endpoints
+```http
+POST /api/v1/transactions/withdraw/initiate
+POST /api/v1/transactions/withdraw/complete
+POST /api/v1/transactions/transfer/initiate
+POST /api/v1/transactions/transfer/complete
+POST /api/v1/transactions/balance
+GET  /api/v1/transactions/history
+GET  /api/v1/transactions/{transactionId}
+POST /api/v1/transactions/{transactionId}/cancel
+```
+
+### Health & Monitoring
+```http
+GET  /api/v1/health
+GET  /api/v1/health/ready
+GET  /api/v1/health/live
+GET  /api/v1/health/info
+```
+
+### Example API Usage
+```bash
+# Authenticate with PIN
+curl -X POST http://localhost:8080/api/v1/auth/login/pin \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customerNumber": "12345678",
+    "pin": "123456",
+    "deviceId": "mobile-device-001"
+  }'
+
+# Initiate withdrawal
+curl -X POST http://localhost:8080/api/v1/transactions/withdraw/initiate \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "accountId": "account-001",
+    "amount": 100.00,
+    "currency": "USD",
+    "atmId": "atm-001",
+    "deviceId": "mobile-device-001"
+  }'
+```
 
 ## 🧪 Testing
 
@@ -182,15 +308,18 @@ atmconnect:
 
 ```bash
 # All tests
-./gradlew test
+./mvnw test
 
 # Specific test categories
-./gradlew test --tests "*Security*"
-./gradlew test --tests "*BLE*"
-./gradlew test --tests "*Architecture*"
+./mvnw test -Dtest="*Security*"
+./mvnw test -Dtest="*BLE*"
+./mvnw test -Dtest="*Architecture*"
 
 # With coverage report
-./gradlew test jacocoTestReport
+./mvnw test jacoco:report
+
+# Integration tests with PostgreSQL
+./mvnw test -Dspring.profiles.active=postgresql
 ```
 
 ### Test Coverage
@@ -221,12 +350,16 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ### Current Features ✅
 - ✅ Hexagonal architecture implementation
-- ✅ BLE peripheral/central functionality
-- ✅ GATT services and characteristics
-- ✅ JWT authentication with blacklisting
-- ✅ AES-256-GCM encryption
+- ✅ Complete REST API with authentication & transaction endpoints
+- ✅ BLE peripheral/central functionality with GATT services
+- ✅ JWT authentication with blacklisting and refresh tokens
+- ✅ AES-256-GCM encryption with ECDH key exchange
+- ✅ PostgreSQL support with Liquibase migrations
+- ✅ Docker deployment with multi-stage builds
+- ✅ Redis caching and session management
 - ✅ Rate limiting and security monitoring
-- ✅ Comprehensive test suite
+- ✅ Comprehensive test suite with 90%+ coverage
+- ✅ Production-ready configuration and deployment scripts
 
 ### Roadmap 🗺️
 - 🔄 Real BLE hardware integration
