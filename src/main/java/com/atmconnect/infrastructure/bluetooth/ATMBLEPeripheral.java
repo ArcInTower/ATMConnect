@@ -62,6 +62,24 @@ public class ATMBLEPeripheral {
     private GATTCharacteristic certificateCharacteristic;
     
     /**
+     * Checks if the GATT server is running.
+     * 
+     * @return true if server is running
+     */
+    public boolean isServerRunning() {
+        return isServerRunning.get();
+    }
+    
+    /**
+     * Checks if BLE advertising is active.
+     * 
+     * @return true if advertising
+     */
+    public boolean isAdvertising() {
+        return isAdvertising.get();
+    }
+    
+    /**
      * Initializes the ATM BLE Peripheral with GATT server setup.
      * 
      * @param atmCode unique identifier for this ATM
