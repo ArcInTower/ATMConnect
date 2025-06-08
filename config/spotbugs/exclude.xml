@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- Exclude test classes -->
+    <Match>
+        <Class name="~.*\..*Test" />
+    </Match>
+    
+    <!-- Exclude generated classes -->
+    <Match>
+        <Class name="~.*\.Q.*" />
+    </Match>
+    
+    <!-- Exclude Lombok generated methods -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2" />
+        <Class name="~.*\.(dto|valueobjects)\..*" />
+    </Match>
+    
+    <!-- Exclude Spring configuration classes -->
+    <Match>
+        <Class name="~.*Config" />
+        <Bug pattern="UWF_UNWRITTEN_FIELD" />
+    </Match>
+</FindBugsFilter>

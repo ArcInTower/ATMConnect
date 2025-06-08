@@ -1,0 +1,131 @@
+spring:
+  application:
+    name: atmconnect
+  
+  profiles:
+    active: development
+  
+  datasource:
+    url: jdbc:h2:mem:atmconnect;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+  
+  security:
+    require-ssl: true
+  
+server:
+  port: 8443
+  ssl:
+    enabled: true
+    key-store-type: PKCS12
+    key-store: classpath:keystore/atmconnect.p12
+    key-store-password: changeit
+    key-alias: atmconnect
+  
+  error:
+    include-stacktrace: never
+    include-message: always
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    com.atmconnect: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/atmconnect.log
+    max-size: 10MB
+    max-history: 30
+
+jwt:
+  secret: "mySecretKey123456789012345678901234567890"
+  expiration-ms: 900000 # 15 minutes
+
+atmconnect:
+  bluetooth:
+    scan-timeout-seconds: 30
+    connection-timeout-seconds: 10
+    max-concurrent-connections: 5
+  
+  security:
+    max-failed-attempts: 3
+    lockout-duration-minutes: 30
+    otp-expiration-minutes: 5
+    session-timeout-minutes: 15
+  
+  transaction:
+    max-daily-withdrawal: 2000.00
+    default-withdrawal-limit: 500.00
+    transaction-timeout-minutes: 5
+
+---
+spring:
+  config:
+    activate:
+      on-profile: development
+
+logging:
+  level:
+    com.atmconnect: DEBUG
+    org.springframework.security: DEBUG
+
+server:
+  ssl:
+    enabled: false
+  port: 8080
+
+---
+spring:
+  config:
+    activate:
+      on-profile: production
+
+logging:
+  level:
+    com.atmconnect: WARN
+    org.springframework.security: WARN
+    org.hibernate.SQL: ERROR
+
+server:
+  ssl:
+    enabled: true
+  port: 8443
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics

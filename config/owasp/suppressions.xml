@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <!-- Suppress false positives for test dependencies -->
+    <suppress>
+        <notes><![CDATA[
+        Suppress test dependencies that may have vulnerabilities but are not used in production
+        ]]></notes>
+        <gav regex="true">^org\.junit.*:.*:.*$</gav>
+    </suppress>
+    
+    <suppress>
+        <notes><![CDATA[
+        Suppress H2 database vulnerabilities as it's only used for development/testing
+        ]]></notes>
+        <gav regex="true">^com\.h2database:h2:.*$</gav>
+    </suppress>
+    
+    <!-- Suppress Spring Boot development tools -->
+    <suppress>
+        <notes><![CDATA[
+        Development tools are not included in production builds
+        ]]></notes>
+        <gav regex="true">^org\.springframework\.boot:spring-boot-devtools:.*$</gav>
+    </suppress>
+</suppressions>
