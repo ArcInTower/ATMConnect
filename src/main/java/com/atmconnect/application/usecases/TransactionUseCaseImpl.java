@@ -6,10 +6,15 @@ import com.atmconnect.domain.entities.Transaction;
 import com.atmconnect.domain.ports.inbound.TransactionUseCase;
 import com.atmconnect.domain.ports.outbound.TransactionRepository;
 import com.atmconnect.domain.ports.outbound.CryptoService;
+import com.atmconnect.domain.ports.outbound.NotificationService;
 import com.atmconnect.domain.valueobjects.Money;
 import com.atmconnect.domain.valueobjects.TransactionId;
 import com.atmconnect.infrastructure.adapters.outbound.AccountRepository;
 import com.atmconnect.infrastructure.adapters.outbound.ATMRepository;
+import com.atmconnect.application.services.TransactionValidator;
+import com.atmconnect.application.services.TransactionFactory;
+import com.atmconnect.infrastructure.exceptions.ATMConnectException;
+import com.atmconnect.infrastructure.exceptions.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,51 +34,61 @@ public class TransactionUseCaseImpl implements TransactionUseCase {
     private final AccountRepository accountRepository;
     private final ATMRepository atmRepository;
     private final CryptoService cryptoService;
+    private final NotificationService notificationService;
+    private final TransactionValidator transactionValidator;
+    private final TransactionFactory transactionFactory;
     
     @Override
     @Transactional
     public Transaction initiateWithdrawal(String accountId, Money amount, String atmId, String deviceId) {
-        log.info("Initiating withdrawal for account: {}, amount: {}", accountId, amount);
+        log.info("Initiating withdrawal for account: {}, amount: {}", 
+            accountId != null ? "***" + accountId.substring(Math.max(0, accountId.length() - 4)) : "null", 
+            amount);
         
-        Account account = accountRepository.findById(accountId)
-            .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-        
-        ATM atm = atmRepository.findById(atmId)
-            .orElseThrow(() -> new IllegalArgumentException("ATM not found"));
-        
-        if (!atm.isAvailable()) {
-            throw new IllegalStateException("ATM is not available");
+        try {
+            Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new ATMConnectException(ErrorCode.ACCOUNT_NOT_FOUND));
+            
+            ATM atm = atmRepository.findById(atmId)
+                .orElseThrow(() -> new ATMConnectException(ErrorCode.ATM_NOT_AVAILABLE, "ATM not found"));
+            
+            // Validate preconditions using the validator
+            transactionValidator.validateWithdrawalEligibility(account, amount);
+            transactionValidator.validateAtmAvailability(atm);
+            transactionValidator.validateDeviceRegistration(account, deviceId);
+            
+            // Create transaction using factory
+            Transaction transaction = transactionFactory.createWithdrawalTransaction(account, amount, atm, deviceId);
+            Transaction savedTransaction = transactionRepository.save(transaction);
+            
+            // Send OTP notification asynchronously
+            notificationService.sendOtpSms(
+                account.getCustomer().getPhoneNumber(),
+                transaction.getOtpCode(),
+                transaction.getReferenceNumber()
+            ).whenComplete((result, throwable) -> {
+                if (throwable != null) {
+                    log.error("Failed to send OTP SMS for transaction: {}", 
+                        transaction.getReferenceNumber(), throwable);
+                } else if (!result.isSuccessful()) {
+                    log.warn("OTP SMS delivery failed for transaction: {} - {}", 
+                        transaction.getReferenceNumber(), result.getErrorMessage());
+                }
+            });
+            
+            log.info("Withdrawal initiated successfully. Reference: {}", 
+                savedTransaction.getReferenceNumber());
+            
+            return savedTransaction;
+            
+        } catch (ATMConnectException e) {
+            log.warn("Withdrawal initiation failed: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error during withdrawal initiation", e);
+            throw new ATMConnectException(ErrorCode.INTERNAL_SERVER_ERROR, 
+                "Unable to process withdrawal request");
         }
-        
-        if (!account.canWithdraw(amount)) {
-            throw new IllegalArgumentException("Withdrawal not allowed");
-        }
-        
-        String otpCode = cryptoService.generateOTP();
-        String referenceNumber = generateReferenceNumber();
-        
-        Transaction transaction = Transaction.builder()
-            .transactionId(new TransactionId())
-            .type(Transaction.TransactionType.WITHDRAWAL)
-            .amount(amount)
-            .currency(amount.getCurrency().getCurrencyCode())
-            .account(account)
-            .atm(atm)
-            .deviceId(deviceId)
-            .otpCode(otpCode)
-            .referenceNumber(referenceNumber)
-            .securityHash(computeTransactionHash(accountId, amount, atmId, deviceId))
-            .build();
-        
-        Transaction savedTransaction = transactionRepository.save(transaction);
-        
-        log.info("Withdrawal initiated. Reference: {}", referenceNumber);
-        log.debug("OTP generated for withdrawal reference: {}", referenceNumber);
-        
-        // In production, send OTP via SMS/email
-        sendOTP(account.getCustomer().getPhoneNumber(), otpCode, referenceNumber);
-        
-        return savedTransaction;
     }
     
     @Override

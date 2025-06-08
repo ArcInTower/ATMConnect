@@ -9,6 +9,35 @@ import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+/**
+ * Domain entity representing a banking transaction in the ATMConnect system.
+ * 
+ * <p>This entity encapsulates all information related to a banking transaction,
+ * including withdrawals, balance inquiries, transfers, and PIN changes. Each
+ * transaction maintains its own security context with verification codes and
+ * integrity hashes to ensure secure processing.</p>
+ * 
+ * <h3>Transaction Lifecycle:</h3>
+ * <ol>
+ *   <li><strong>PENDING</strong> - Transaction initiated, awaiting verification</li>
+ *   <li><strong>COMPLETED</strong> - Transaction successfully processed</li>
+ *   <li><strong>FAILED</strong> - Transaction failed due to business rules or system errors</li>
+ *   <li><strong>CANCELLED</strong> - Transaction cancelled by user or system</li>
+ * </ol>
+ * 
+ * <h3>Security Features:</h3>
+ * <ul>
+ *   <li>Unique transaction IDs for tracking and auditing</li>
+ *   <li>OTP verification for sensitive operations</li>
+ *   <li>Security hash for data integrity verification</li>
+ *   <li>Device tracking for multi-factor authentication</li>
+ *   <li>Automatic expiration to prevent replay attacks</li>
+ * </ul>
+ * 
+ * @author ATMConnect Development Team
+ * @version 1.0
+ * @since 1.0
+ */
 @Entity
 @Table(name = "transactions")
 @Data
